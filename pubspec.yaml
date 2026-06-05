@@ -1,7 +1,7 @@
 name: memo_api
 description: A server app using the shelf package and Docker.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/josufh/Dart-Memo-API
 
 environment:
   sdk: ^3.12.1

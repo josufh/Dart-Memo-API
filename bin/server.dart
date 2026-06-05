@@ -1,34 +1,21 @@
 import 'dart:io';
 
+import 'package:memo_api/controllers/memo_controller.dart';
+import 'package:memo_api/repositories/memo_repository.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
-import 'package:shelf_router/shelf_router.dart';
-
-// Configure routes.
-final _router = Router()
-  ..get('/', _rootHandler)
-  ..get('/echo/<message>', _echoHandler);
-
-Response _rootHandler(Request req) {
-  return Response.ok('Hello, World!\n');
-}
-
-Response _echoHandler(Request request) {
-  final message = request.params['message'];
-  return Response.ok('$message\n');
-}
 
 void main(List<String> args) async {
-  // Use any available host or container IP (usually `0.0.0.0`).
-  final ip = InternetAddress.anyIPv4;
+  final MemoRepository repository = MemoRepository();
+  final MemoController controller = MemoController(repository);
 
-  // Configure a pipeline that logs requests.
   final handler = Pipeline()
       .addMiddleware(logRequests())
-      .addHandler(_router.call);
+      .addHandler(controller.router.call);
 
-  // For running in containers, we respect the PORT environment variable.
-  final port = int.parse(Platform.environment['PORT'] ?? '8080');
-  final server = await serve(handler, ip, port);
-  print('Server listening on port ${server.port}');
+  final int port = int.parse(Platform.environment['PORT'] ?? '8080');
+
+  final HttpServer server = await serve(handler, InternetAddress.anyIPv4, port);
+
+  print('Memo API running on port ${server.port}');
 }

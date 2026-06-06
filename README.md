@@ -18,6 +18,30 @@ http://localhost:8080
 
 ---
 
+# Authentication
+
+All endpoints require an API key. Send it with either `X-API-Key`:
+
+```http
+X-API-Key: your-api-key
+```
+
+or as a bearer token:
+
+```http
+Authorization: Bearer your-api-key
+```
+
+Configure one or more valid keys with the `API_KEYS` environment variable:
+
+```bash
+API_KEYS="first-key,second-key" dart run bin/server.dart
+```
+
+If `API_KEYS` is empty, the server fails to start so the API is not accidentally exposed without authentication.
+
+---
+
 # Memo Object
 
 ```json
@@ -55,7 +79,8 @@ GET /memos
 ### Example
 
 ```bash
-curl https://your-api-domain.example.com/memos
+curl https://your-api-domain.example.com/memos \
+  -H "X-API-Key: your-api-key"
 ```
 
 ### Success Response
@@ -95,7 +120,8 @@ GET /memos/{id}
 ### Example
 
 ```bash
-curl https://your-api-domain.example.com/memos/abc123
+curl https://your-api-domain.example.com/memos/abc123 \
+  -H "X-API-Key: your-api-key"
 ```
 
 ### Success Response
@@ -145,6 +171,7 @@ POST /memos
 
 ```bash
 curl -X POST https://your-api-domain.example.com/memos \
+  -H "X-API-Key: your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Shopping List",
@@ -211,6 +238,7 @@ PUT /memos/{id}
 
 ```bash
 curl -X PUT https://your-api-domain.example.com/memos/abc123 \
+  -H "X-API-Key: your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Updated Title",
@@ -255,7 +283,8 @@ DELETE /memos/{id}
 ### Example
 
 ```bash
-curl -X DELETE https://your-api-domain.example.com/memos/abc123
+curl -X DELETE https://your-api-domain.example.com/memos/abc123 \
+  -H "X-API-Key: your-api-key"
 ```
 
 ### Success Response
@@ -297,6 +326,7 @@ curl -X DELETE https://your-api-domain.example.com/memos/abc123
 | 200  | Request completed successfully |
 | 201  | Resource created successfully  |
 | 400  | Invalid request                |
+| 401  | Missing or invalid API key     |
 | 404  | Resource not found             |
 | 500  | Internal server error          |
 

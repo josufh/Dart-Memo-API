@@ -7,7 +7,7 @@ class Memo {
     required this.updatedAt,
   });
 
-  final int id;
+  final String id;
   String title;
   String content;
   final DateTime createdAt;

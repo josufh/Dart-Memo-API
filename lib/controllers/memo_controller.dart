@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:memo_api/models/memo.dart';
-import 'package:memo_api/repositories/memo_repository.dart';
+import 'package:memo_api/repositories/firestore_memo_repository.dart';
 import 'package:memo_api/responses/json_response.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -9,7 +9,7 @@ import 'package:shelf_router/shelf_router.dart';
 class MemoController {
   MemoController(this._repository);
 
-  final MemoRepository _repository;
+  final FirestoreMemoRepository _repository;
 
   Router get router {
     final Router router = Router()
@@ -22,20 +22,14 @@ class MemoController {
     return router;
   }
 
-  Response getAll(Request request) {
-    final List<Memo> memos = _repository.getAll();
+  Future<Response> getAll(Request request) async {
+    final List<Memo> memos = await _repository.getAll();
 
     return jsonResponse(memos.map((memo) => memo.toJson()).toList());
   }
 
-  Response getById(Request request, String id) {
-    final int? memoId = int.tryParse(id);
-
-    if (memoId == null) {
-      return jsonResponse({'error': 'Invalid memo id.'}, statusCode: 400);
-    }
-
-    final Memo? memo = _repository.getById(memoId);
+  Future<Response> getById(Request request, String id) async {
+    final Memo? memo = await _repository.getById(id);
 
     if (memo == null) {
       return jsonResponse({'error': 'Memo not found.'}, statusCode: 404);
@@ -62,18 +56,12 @@ class MemoController {
       return jsonResponse({'error': 'Content is required.'}, statusCode: 400);
     }
 
-    final Memo memo = _repository.create(title, content);
+    final Memo memo = await _repository.create(title, content);
 
     return jsonResponse(memo.toJson(), statusCode: 201);
   }
 
   Future<Response> update(Request request, String id) async {
-    final int? memoId = int.tryParse(id);
-
-    if (memoId == null) {
-      return jsonResponse({'error': 'Invalid memo id.'}, statusCode: 400);
-    }
-
     final Map<String, dynamic>? body = await _readJson(request);
 
     if (body == null) {
@@ -91,7 +79,7 @@ class MemoController {
       return jsonResponse({'error': 'Content is required.'}, statusCode: 400);
     }
 
-    final Memo? memo = _repository.update(memoId, title, content);
+    final Memo? memo = await _repository.update(id, title, content);
 
     if (memo == null) {
       return jsonResponse({'error': 'Memo not found.'}, statusCode: 404);
@@ -100,14 +88,8 @@ class MemoController {
     return jsonResponse(memo.toJson());
   }
 
-  Response delete(Request request, String id) {
-    final int? memoId = int.tryParse(id);
-
-    if (memoId == null) {
-      return jsonResponse({'error': 'Invalid memo id.'}, statusCode: 400);
-    }
-
-    final bool deleted = _repository.delete(memoId);
+  Future<Response> delete(Request request, String id) async {
+    final bool deleted = await _repository.delete(id);
 
     if (!deleted) {
       return jsonResponse({'error': 'Memo not found.'}, statusCode: 404);

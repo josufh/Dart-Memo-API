@@ -1,12 +1,14 @@
 import 'dart:io';
 
+import 'package:google_cloud_firestore/google_cloud_firestore.dart';
 import 'package:memo_api/controllers/memo_controller.dart';
-import 'package:memo_api/repositories/memo_repository.dart';
+import 'package:memo_api/repositories/firestore_memo_repository.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 
 void main(List<String> args) async {
-  final MemoRepository repository = MemoRepository();
+  final Firestore firestore = Firestore();
+  final FirestoreMemoRepository repository = FirestoreMemoRepository(firestore);
   final MemoController controller = MemoController(repository);
 
   final handler = Pipeline()

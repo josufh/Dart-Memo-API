@@ -1,49 +1,311 @@
-A server app built using [Shelf](https://pub.dev/packages/shelf),
-configured to enable running with [Docker](https://www.docker.com/).
+# Memo API
 
-This sample code handles HTTP GET requests to `/` and `/echo/<message>`
+A simple REST API for managing memos.
 
-# Running the sample
+## Base URL
 
-## Running with the Dart SDK
+### Production
 
-You can run the example with the [Dart SDK](https://dart.dev/get-dart)
-like this:
-
-```
-$ dart run bin/server.dart
-Server listening on port 8080
+```text
+https://your-api-domain.example.com
 ```
 
-And then from a second terminal:
-```
-$ curl http://0.0.0.0:8080
-Hello, World!
-$ curl http://0.0.0.0:8080/echo/I_love_Dart
-I_love_Dart
+### Local Development
+
+```text
+http://localhost:8080
 ```
 
-## Running with Docker
+---
 
-If you have [Docker Desktop](https://www.docker.com/get-started) installed, you
-can build and run with the `docker` command:
+# Memo Object
 
-```
-$ docker build . -t myserver
-$ docker run -it -p 8080:8080 myserver
-Server listening on port 8080
-```
-
-And then from a second terminal:
-```
-$ curl http://0.0.0.0:8080
-Hello, World!
-$ curl http://0.0.0.0:8080/echo/I_love_Dart
-I_love_Dart
+```json
+{
+  "id": "abc123",
+  "title": "Shopping List",
+  "content": "Milk, Bread, Eggs",
+  "createdAt": "2026-06-06T12:34:56.789Z",
+  "updatedAt": "2026-06-06T12:34:56.789Z"
+}
 ```
 
-You should see the logging printed in the first terminal:
+| Field     | Type     | Description                       |
+| --------- | -------- | --------------------------------- |
+| id        | string   | Unique memo identifier            |
+| title     | string   | Memo title                        |
+| content   | string   | Memo content                      |
+| createdAt | datetime | Creation timestamp (UTC)          |
+| updatedAt | datetime | Last modification timestamp (UTC) |
+
+---
+
+# Endpoints
+
+## Get All Memos
+
+Returns all memos.
+
+### Request
+
+```http
+GET /memos
 ```
-2021-05-06T15:47:04.620417  0:00:00.000158 GET     [200] /
-2021-05-06T15:47:08.392928  0:00:00.001216 GET     [200] /echo/I_love_Dart
+
+### Example
+
+```bash
+curl https://your-api-domain.example.com/memos
+```
+
+### Success Response
+
+**Status Code**
+
+```text
+200 OK
+```
+
+**Body**
+
+```json
+[
+  {
+    "id": "abc123",
+    "title": "Shopping List",
+    "content": "Milk, Bread, Eggs",
+    "createdAt": "2026-06-06T12:34:56.789Z",
+    "updatedAt": "2026-06-06T12:34:56.789Z"
+  }
+]
+```
+
+---
+
+## Get Memo By ID
+
+Returns a specific memo.
+
+### Request
+
+```http
+GET /memos/{id}
+```
+
+### Example
+
+```bash
+curl https://your-api-domain.example.com/memos/abc123
+```
+
+### Success Response
+
+**Status Code**
+
+```text
+200 OK
+```
+
+### Error Response
+
+**Status Code**
+
+```text
+404 Not Found
+```
+
+```json
+{
+  "error": "Memo not found."
+}
+```
+
+---
+
+## Create Memo
+
+Creates a new memo.
+
+### Request
+
+```http
+POST /memos
+```
+
+### Request Body
+
+```json
+{
+  "title": "Shopping List",
+  "content": "Milk, Bread, Eggs"
+}
+```
+
+### Example
+
+```bash
+curl -X POST https://your-api-domain.example.com/memos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Shopping List",
+    "content": "Milk, Bread, Eggs"
+  }'
+```
+
+### Success Response
+
+**Status Code**
+
+```text
+201 Created
+```
+
+**Body**
+
+```json
+{
+  "id": "abc123",
+  "title": "Shopping List",
+  "content": "Milk, Bread, Eggs",
+  "createdAt": "2026-06-06T12:34:56.789Z",
+  "updatedAt": "2026-06-06T12:34:56.789Z"
+}
+```
+
+### Error Response
+
+**Status Code**
+
+```text
+400 Bad Request
+```
+
+```json
+{
+  "error": "Title is required."
+}
+```
+
+---
+
+## Update Memo
+
+Updates an existing memo.
+
+### Request
+
+```http
+PUT /memos/{id}
+```
+
+### Request Body
+
+```json
+{
+  "title": "Updated Title",
+  "content": "Updated Content"
+}
+```
+
+### Example
+
+```bash
+curl -X PUT https://your-api-domain.example.com/memos/abc123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Title",
+    "content": "Updated Content"
+  }'
+```
+
+### Success Response
+
+**Status Code**
+
+```text
+200 OK
+```
+
+### Error Response
+
+**Status Code**
+
+```text
+404 Not Found
+```
+
+```json
+{
+  "error": "Memo not found."
+}
+```
+
+---
+
+## Delete Memo
+
+Deletes a memo.
+
+### Request
+
+```http
+DELETE /memos/{id}
+```
+
+### Example
+
+```bash
+curl -X DELETE https://your-api-domain.example.com/memos/abc123
+```
+
+### Success Response
+
+**Status Code**
+
+```text
+200 OK
+```
+
+**Body**
+
+```json
+{
+  "message": "Memo deleted."
+}
+```
+
+### Error Response
+
+**Status Code**
+
+```text
+404 Not Found
+```
+
+```json
+{
+  "error": "Memo not found."
+}
+```
+
+---
+
+# Status Codes
+
+| Code | Description                    |
+| ---- | ------------------------------ |
+| 200  | Request completed successfully |
+| 201  | Resource created successfully  |
+| 400  | Invalid request                |
+| 404  | Resource not found             |
+| 500  | Internal server error          |
+
+---
+
+# Content Type
+
+All requests and responses use JSON.
+
+```http
+Content-Type: application/json
 ```

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:google_cloud_firestore/google_cloud_firestore.dart';
 import 'package:memo_api/controllers/memo_controller.dart';
 import 'package:memo_api/middleware/api_key_auth.dart';
+import 'package:memo_api/middleware/cors.dart';
 import 'package:memo_api/repositories/firestore_memo_repository.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
@@ -19,6 +20,7 @@ void main(List<String> args) async {
 
   final handler = Pipeline()
       .addMiddleware(logRequests())
+      .addMiddleware(corsMiddleware())
       .addMiddleware(apiKeyAuthMiddleware(apiKeys))
       .addHandler(controller.router.call);
 
